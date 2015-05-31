@@ -1,7 +1,7 @@
 
 from copy import deepcopy
 
-from util import json_dump, json_dump_pretty
+from util import EMPTY, json_dump, json_dump_pretty
 
 
 class Snapshot(object):
@@ -9,7 +9,9 @@ class Snapshot(object):
 	Snapshots in general should be immutable. Exercise caution handing the data
 	to users which might modify it. Note that all copies are deep copies for this reason."""
 
-	def __init__(self, tid, data=None):
+	def __init__(self, tid=None, data=None):
+		"""data is initial state. tid may be None to represent no starting point; the first
+		transaction applied MUST be tid 0."""
 		self.tid = tid
 		if data is None:
 			self.data = {}
@@ -21,9 +23,14 @@ class Snapshot(object):
 
 	def apply(self, transaction):
 		"""Apply the transaction to this snapshot, returning a new snapshot."""
-		if transaction.tid != self.tid + 1:
-			raise ValueError("Attempted to apply tid {} to a snapshot at tid {}".format(
-			                 transaction.tid, self.tid))
+		if self.tid is None:
+			if transaction.tid != 0:
+				raise ValueError("Attempted to apply tid {} to an uninitialized snapshot".format(
+				                 transaction.tid))
+		else:
+			if transaction.tid != self.tid + 1:
+				raise ValueError("Attempted to apply tid {} to a snapshot at tid {}".format(
+				                 transaction.tid, self.tid))
 
 		result = Snapshot(transaction.tid, self.data)
 

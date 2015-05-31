@@ -1,4 +1,5 @@
 
+from transaction import Transaction
 
 
 class TransactionsFile(file):
@@ -15,3 +16,7 @@ class TransactionsFile(file):
 		if not line.endswith('\n'):
 			return # EOF reached
 		return Transaction.from_str(line.strip())
+
+	def write_transaction(self, transaction):
+		self.write(transaction.json() + '\n')
+		self.flush()

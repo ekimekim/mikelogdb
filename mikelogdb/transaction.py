@@ -1,5 +1,7 @@
 
-from util import EMPTY, json_load, json_dump, json_dump_pretty
+import hashlib
+
+from util import json_load, json_dump, json_dump_pretty
 
 
 class Transaction(object):
@@ -45,13 +47,13 @@ class Transaction(object):
 
 	def _data_without_hash(self):
 		parent = self.parent.hash if isinstance(self.parent, Transaction) else self.parent
-		return dict(tid=self.tid, parent=parent, actions=actions)
+		return dict(tid=self.tid, parent=parent, actions=self.actions)
 
 	@property
 	def hash(self):
 		"""Note that returned value is a b64-encoded string"""
 		data = self._data_without_hash()
-		return hashlib.sha256(json_dump(data, sort_keys=True)).digest().encode('base64')
+		return hashlib.sha256(json_dump(data, sort_keys=True)).digest().encode('base64').strip()
 
 	def to_data(self):
 		data = self._data_without_hash()

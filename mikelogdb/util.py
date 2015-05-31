@@ -1,11 +1,13 @@
 
+import json
+
 
 class EmptyType(object):
 	"""Singleton representing the absense of a value.
 	We would use None, but we want to be able to store None."""
 	def __repr__(self):
 		return '<EMPTY>'
-	__str__ == __repr__
+	__str__ = __repr__
 
 EMPTY = EmptyType()
 
@@ -30,8 +32,8 @@ def _object_hook(obj):
 def _default(obj):
 	for cls in EXTENDED_OBJECTS:
 		if isinstance(obj, cls):
-		serialize, deserialize = EXTENDED_OBJECTS[cls]
-		return serialize(obj)
+			serialize, deserialize = EXTENDED_OBJECTS[cls]
+			return {'__ext__': cls.__name__, 'data': serialize(obj)}
 	raise TypeError("Cannot convert {!r} to json".format(obj))
 
 def json_load(s, **kwargs):
