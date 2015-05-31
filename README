@@ -1,0 +1,3 @@
+Purpose: A toy log-based database
+It will not be fast, it will not have good consistency properties.
+I am solely writing it for fun.
