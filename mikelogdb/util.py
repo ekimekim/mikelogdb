@@ -17,7 +17,6 @@ EMPTY = EmptyType()
 # and providing funcs to serialize to a JSONable value and back
 EXTENDED_OBJECTS = {
 	EmptyType: (lambda empty: {}, lambda o: EMPTY),
-	set: (list, set),
 }
 
 
