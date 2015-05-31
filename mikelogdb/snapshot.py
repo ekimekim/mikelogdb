@@ -56,13 +56,16 @@ class Snapshot(object):
 				raise ValueError("Error applying transaction {!r}: root{} has no key {}".format(
 				                 transaction, prefix_str(), key))
 
-		return result	
+		return result
+
+	def to_data(self):
+		return dict(tid=self.tid, data=self.data)
 
 	def json(self):
-		return json_dump(self.data)
+		return json_dump(self.to_data())
 
 	def __repr__(self):
 		return "<{} tid={}>".format(type(self).__name__, self.tid)
 
 	def __str__(self):
-		return json_dump_pretty(self.data)
+		return json_dump_pretty(self.to_data())
