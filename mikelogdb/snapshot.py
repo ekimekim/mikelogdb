@@ -37,6 +37,9 @@ class Snapshot(object):
 			if transaction.tid != self.tid + 1:
 				raise ValueError("Attempted to apply tid {} to a snapshot at tid {}".format(
 				                 transaction.tid, self.tid))
+			if transaction.parent != self.transaction.hash:
+				raise ValueError("Hash mismatch - tried to apply {!r}, snapshot expected {!r}".format(
+				                 transaction.parent, self.transaction.hash))
 
 		result = Snapshot(transaction, self.data)
 
