@@ -32,8 +32,10 @@ It is up to the user to define a transport between database instances and to exe
 them in sync.
 
 File listing:
-	log.py - Low level log sequence definition
+	transaction.py - Low level log definition
 	snapshot.py - Builds a log sequence into a coherent database
 	db.py - User interface to database
 	merge.py - Defines merge strategies for objects
+	files.py - Utils for dealing with the on-disk files
+	util.py - Misc common utilities
 """
