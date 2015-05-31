@@ -35,7 +35,12 @@ def _default(obj):
 	raise TypeError("Cannot convert {!r} to json".format(obj))
 
 def json_load(s, **kwargs):
-	json.loads(s, object_hook=_object_hook, **kwargs)
+	return json.loads(s, object_hook=_object_hook, **kwargs)
 
-def json_dump(obj, **kwargs):
-	json.dumps(obj, default=_default, separators=(',', ':'), **kwargs)
+def json_dump(obj, separators=(',', ':'), **kwargs):
+	return json.dumps(obj, default=_default, separators=separators, **kwargs)
+
+def json_dump_pretty(obj, **kwargs):
+	kwargs.setdefault('separators', (',', ': '))
+	kwargs.setdefault('indent', 4)
+	return json_dump(obj, **kwargs)

@@ -1,5 +1,5 @@
 
-from util import EMPTY, json_load, json_dump
+from util import EMPTY, json_load, json_dump, json_dump_pretty
 
 
 class Transaction(object):
@@ -10,8 +10,8 @@ class Transaction(object):
 	def __init__(self, parent, actions, tid=None):
 		"""Parent may be hash as b64 string, a Transaction object, or None.
 		If parent is a Transaction, tid may be omitted. Only tid 0 may have parent None.
-		Actons should be tuples (spec_list, old, new)
-		spec_list should be a list of key lookups to reach value being modified.
+		Actons should be tuples (path, old, new)
+		path should be a list of key lookups to reach value being modified.
 		For example, an action that represents:
 			root['foo']['bar'] = ["a"]
 			root['foo']['bar'][0] = "b"
@@ -53,7 +53,16 @@ class Transaction(object):
 		data = self._data_without_hash()
 		return hashlib.sha256(json_dump(data, sort_keys=True)).digest().encode('base64')
 
-	def json(self):
+	def to_data(self):
 		data = self._data_without_hash()
 		data['hash'] = self.hash
-		return json_dump(data)
+		return data
+
+	def json(self):
+		return json_dump(self.to_data())
+
+	def __repr__(self):
+		return "<{} {} ({})>".format(type(self).__name__, self.tid, self.hash[:8])
+
+	def __str__(self):
+		return json_dump_pretty(self.to_data())
