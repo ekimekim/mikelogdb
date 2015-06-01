@@ -2,27 +2,24 @@
 from copy import deepcopy
 
 from transaction import Transaction
-from util import EMPTY, LogDBException, json_load, json_dump, json_dump_pretty
+from util import EMPTY, LogDBException, ValueMismatch, json_load, json_dump, json_dump_pretty
 
 
 class ApplyError(LogDBException):
 	"""Errors that may occur during application of a transaction to a snapshot"""
-	pass
 
-class InvalidApply(ApplyError):
+class InvalidApply(ApplyError, ValueMismatch):
 	"""Raised when a transaction is applied to an incompatible snapshot.
 	Subclasses specify what value was mismatched."""
-	pass
 
-class InvalidTid(InvalidApply):
-	pass
+class InvalidApplyTid(InvalidApply):
+	value_name = 'tid'
 
-class InvalidHash(InvalidApply):
-	pass
+class InvalidApplyHash(InvalidApply):
+	value_name = 'hash'
 
 class InconsistentTransaction(ApplyError):
 	"""Raised when a transaction fails to apply its changes, due to incorrect values"""
-	pass
 
 
 class Snapshot(object):
@@ -51,15 +48,12 @@ class Snapshot(object):
 		"""Apply the transaction to this snapshot, returning a new snapshot."""
 		if self.tid is None:
 			if transaction.tid != 0:
-				raise InvalidTid("Attempted to apply tid {} to an uninitialized snapshot".format(
-				                 transaction.tid))
+				raise InvalidApplyTid(transaction.tid)
 		else:
 			if transaction.tid != self.tid + 1:
-				raise InvalidTid("Attempted to apply tid {} to a snapshot at tid {}".format(
-				                 transaction.tid, self.tid))
+				raise InvalidApplyTid(transaction.tid, self.tid)
 			if transaction.parent != self.transaction.hash:
-				raise InvalidHash("Hash mismatch - tried to apply {!r}, snapshot expected {!r}".format(
-				                  transaction.parent, self.transaction.hash))
+				raise InvalidApplyHash(transaction.parent, self.transaction.hash)
 
 		result = Snapshot(transaction, self.data)
 

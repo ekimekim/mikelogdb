@@ -4,7 +4,15 @@ import json
 
 class LogDBException(Exception):
 	"""Base class for LogDB exceptions"""
-	pass
+
+class ValueMismatch(LogDBException):
+	"""Implements common functionality for errors that inicate a value did not match its expected value."""
+	value_name = NotImplemented # replace with a string like "hash"
+	def __init__(self, expected, actual):
+		self.expected = expected
+		self.actual = actual
+	def __str__(self):
+		return "{self.value_name} mismatch: Expected {self.expected!r}, got {self.actual!r}".format(self=self)
 
 
 class EmptyType(object):

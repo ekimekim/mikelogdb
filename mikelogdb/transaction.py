@@ -1,11 +1,18 @@
 
 import hashlib
 
-from util import LogDBException, json_load, json_dump, json_dump_pretty
+from util import ValueMismatch, json_load, json_dump, json_dump_pretty
 
 
-class InvalidTransaction(LogDBException):
-	pass
+class InvalidTransaction(ValueMismatch):
+	"""Indicates a malformed transaction object was attempted to be created.
+	Subclasses indicate the malformed value."""
+
+class InvalidTransactionTid(InvalidTransaction):
+	value_name = 'tid'
+
+class InvalidTransactionHash(InvalidTransaction):
+	value_name = 'hash'
 
 
 class Transaction(object):
@@ -39,11 +46,11 @@ class Transaction(object):
 		if tid is None:
 			tid = expected_tid
 		if tid != expected_tid:
-			raise InvalidTransaction("Expected tid {}, but given tid {}".format(parent.tid, tid))
+			raise InvalidTransactionTid(parent.tid, tid)
 		self.tid = tid
 
 		if hash is not None and hash != self.hash:
-			raise InvalidTransaction("Expected hash {}, but given {}".format(self.hash, hash))
+			raise InvalidTransactionHash(self.hash, hash)
 
 	@classmethod
 	def from_str(cls, s):
