@@ -1,7 +1,11 @@
 
 import hashlib
 
-from util import json_load, json_dump, json_dump_pretty
+from util import LogDBException, json_load, json_dump, json_dump_pretty
+
+
+class InvalidTransaction(LogDBException):
+	pass
 
 
 class Transaction(object):
@@ -35,8 +39,7 @@ class Transaction(object):
 		if tid is None:
 			tid = expected_tid
 		if tid != expected_tid:
-			raise ValueError("Inconsistent transaction: Expected tid {}, but given tid {}".format(
-			                 parent.tid, tid))
+			raise InvalidTransaction("Expected tid {}, but given tid {}".format(parent.tid, tid))
 		self.tid = tid
 
 	@classmethod

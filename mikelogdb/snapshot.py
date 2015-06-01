@@ -1,8 +1,28 @@
 
 from copy import deepcopy
 
-from util import EMPTY, json_load, json_dump, json_dump_pretty
 from transaction import Transaction
+from util import EMPTY, LogDBException, json_load, json_dump, json_dump_pretty
+
+
+class ApplyError(LogDBException):
+	"""Errors that may occur during application of a transaction to a snapshot"""
+	pass
+
+class InvalidApply(ApplyError):
+	"""Raised when a transaction is applied to an incompatible snapshot.
+	Subclasses specify what value was mismatched."""
+	pass
+
+class InvalidTid(InvalidApply):
+	pass
+
+class InvalidHash(InvalidApply):
+	pass
+
+class InconsistentTransaction(ApplyError):
+	"""Raised when a transaction fails to apply its changes, due to incorrect values"""
+	pass
 
 
 class Snapshot(object):
@@ -31,15 +51,15 @@ class Snapshot(object):
 		"""Apply the transaction to this snapshot, returning a new snapshot."""
 		if self.tid is None:
 			if transaction.tid != 0:
-				raise ValueError("Attempted to apply tid {} to an uninitialized snapshot".format(
+				raise InvalidTid("Attempted to apply tid {} to an uninitialized snapshot".format(
 				                 transaction.tid))
 		else:
 			if transaction.tid != self.tid + 1:
-				raise ValueError("Attempted to apply tid {} to a snapshot at tid {}".format(
+				raise InvalidTid("Attempted to apply tid {} to a snapshot at tid {}".format(
 				                 transaction.tid, self.tid))
 			if transaction.parent != self.transaction.hash:
-				raise ValueError("Hash mismatch - tried to apply {!r}, snapshot expected {!r}".format(
-				                 transaction.parent, self.transaction.hash))
+				raise InvalidHash("Hash mismatch - tried to apply {!r}, snapshot expected {!r}".format(
+				                  transaction.parent, self.transaction.hash))
 
 		result = Snapshot(transaction, self.data)
 
@@ -55,18 +75,18 @@ class Snapshot(object):
 					prefix += part,
 				key = path_end
 				if old is not EMPTY and data[key] != old:
-					raise ValueError("Error applying transaction {!r}: expected root{}[{}] == {!r}, got {!r}".format(
-					                 transaction, prefix_str(), key, old, data[key]))
+					raise InconsistentTransaction("Error applying transaction {!r}: expected root{}[{}] == {!r}, got {!r}".format(
+					                              transaction, prefix_str(), key, old, data[key]))
 				if new is not EMPTY:
 					data[key] = new
 				elif old is not EMPTY:
 					del data[key]
 			except (KeyError, IndexError):
-				raise ValueError("Error applying transaction {!r}: root{} has no key {}".format(
-				                 transaction, prefix_str(), key))
+				raise InconsistentTransaction("Error applying transaction {!r}: root{} has no key {}".format(
+				                              transaction, prefix_str(), key))
 			except TypeError as e:
-				raise ValueError("Error applying transaction {!r}: TypeError while changing key {}[{}]: {}".format(
-				                 transaction, prefix_str(), key, e))
+				raise InconsistentTransaction("Error applying transaction {!r}: TypeError while changing key {}[{}]: {}".format(
+				                              transaction, prefix_str(), key, e))
 
 		return result
 

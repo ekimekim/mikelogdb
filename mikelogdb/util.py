@@ -2,6 +2,11 @@
 import json
 
 
+class LogDBException(Exception):
+	"""Base class for LogDB exceptions"""
+	pass
+
+
 class EmptyType(object):
 	"""Singleton representing the absense of a value.
 	We would use None, but we want to be able to store None."""
