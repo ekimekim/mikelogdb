@@ -29,13 +29,12 @@ class Transaction(object):
 		self.parent = parent
 		self.actions = actions
 
-		expected_tid = None
+		expected_tid = tid # by default, no check
 		if isinstance(parent, Transaction):
+			self.parent = parent.hash
 			expected_tid = parent.tid + 1
 		elif parent is None:
 			expected_tid = 0
-		else:
-			expected_tid = tid # no check
 
 		if tid is None:
 			tid = expected_tid
@@ -53,8 +52,7 @@ class Transaction(object):
 		return cls(**s)
 
 	def _data_without_hash(self):
-		parent = self.parent.hash if isinstance(self.parent, Transaction) else self.parent
-		return dict(tid=self.tid, parent=parent, actions=self.actions)
+		return dict(tid=self.tid, parent=self.parent, actions=self.actions)
 
 	@property
 	def hash(self):
