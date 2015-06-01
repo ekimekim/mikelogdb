@@ -13,9 +13,10 @@ class Transaction(object):
 	It has a monotonic transaction id, as well as the hash of its parent transaction.
 	It, in turn, has a hash of its contents that can be used to refer to it.
 	"""
-	def __init__(self, parent, actions, tid=None):
+	def __init__(self, parent, actions, tid=None, hash=None):
 		"""Parent may be hash as b64 string, a Transaction object, or None.
 		If parent is a Transaction, tid may be omitted. Only tid 0 may have parent None.
+		hash should always be None - it is there to validate stored hash when restoring from json.
 		Actons should be tuples (path, old, new)
 		path should be a list of key lookups to reach value being modified.
 		For example, an action that represents:
@@ -41,6 +42,9 @@ class Transaction(object):
 		if tid != expected_tid:
 			raise InvalidTransaction("Expected tid {}, but given tid {}".format(parent.tid, tid))
 		self.tid = tid
+
+		if hash is not None and hash != self.hash:
+			raise InvalidTransaction("Expected hash {}, but given {}".format(self.hash, hash))
 
 	@classmethod
 	def from_str(cls, s):
